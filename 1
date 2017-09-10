@@ -1,0 +1,33 @@
+void judge(){
+    double sum=0;//离散高斯曲率和
+    for(CMyMesh::MeshVertexIterator fiter(&mesh);!fiter.end();fiter++){
+        double sum_angle=0;//周角和
+        CMyVertex *v=*fiter;
+        for(CMyMesh::VertexOutHalfedgeIterator fviter(&mesh,v);!fviter.end();fviter++){
+            CHalfEdge *he=*fviter;
+            CVertex *a=he->source();
+            CVertex *b=he->target();
+            double x=(a->point()-b->point()).norm();//变长
+            he=he->he_next();
+            a=he->source();
+            b=he->target();
+            double y=(a->point()-b->point()).norm();
+            he=he->he_next();
+            a=he->source();
+            b=he->target();
+            double z=(a->point()-b->point()).norm();
+            double angle=acos((x*x+z*z-y*y)/(2.0*x*z));
+            sum_angle+=angle;
+        }
+        if(v->boundary())
+            sum+=M_PI-sum_angle;
+        else
+            sum+=2*M_PI-sum_angle;
+    }
+    int xm=mesh.numVertices()-mesh.numEdges()+mesh.numFaces();//欧拉示性数
+    std::cout<<sum<<std::endl;
+    std::cout<<2*M_PI*xm<<std::endl;
+    if(abs(sum-2*M_PI*xm)<=0.0000001){
+        std::cout<<"可以验证高斯-波涅定理"<<std::endl;
+    }
+}
